@@ -84,18 +84,34 @@ export function Select({ children, ...props }) {
   );
 }
 
-/* ---------------- Toggle ---------------- */
-export function Toggle({ checked, onChange, disabled }) {
+/* ---------------- Toggle (Switch Button) ---------------- */
+export function Toggle({ checked = false, onChange, disabled = false, ariaLabel, className = "", id }) {
+  const isChecked = Boolean(checked);
+
   return (
     <button
+      id={id}
       type="button"
+      role="switch"
+      aria-checked={isChecked}
+      aria-label={ariaLabel || "Toggle switch"}
       disabled={disabled}
-      onClick={() => onChange(!checked)}
-      className={`relative h-6 w-11 rounded-full transition-colors disabled:opacity-50 ${checked ? "bg-moon" : "bg-white/15"}`}
-      aria-pressed={checked}
+      onClick={() => {
+        if (!disabled && onChange) {
+          onChange(!isChecked);
+        }
+      }}
+      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-moon/50 focus:ring-offset-2 focus:ring-offset-ink disabled:cursor-not-allowed disabled:opacity-50 ${
+        isChecked ? "bg-moon" : "bg-slate-700 hover:bg-slate-600"
+      } ${className}`}
     >
       <span
-        className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform ${checked ? "translate-x-[22px]" : "translate-x-0.5"}`}
+        aria-hidden="true"
+        className={`pointer-events-none inline-block h-5 w-5 rounded-full shadow-md ring-0 transition-transform duration-200 ease-in-out ${
+          isChecked
+            ? "translate-x-5 bg-ink"
+            : "translate-x-0 bg-slate-200"
+        }`}
       />
     </button>
   );

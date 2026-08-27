@@ -3,7 +3,7 @@ import React from "react";
 export class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = { hasError: false, error: null, errorInfo: null };
   }
 
   static getDerivedStateFromError(error) {
@@ -12,13 +12,22 @@ export class ErrorBoundary extends React.Component {
 
   componentDidCatch(error, errorInfo) {
     console.error("Uncaught error in React:", error, errorInfo);
+    this.setState({ errorInfo });
   }
+
+  handleReset = () => {
+    try {
+      sessionStorage.clear();
+      localStorage.removeItem("fm_session_id");
+    } catch {}
+    window.location.href = "/";
+  };
 
   render() {
     if (this.state.hasError) {
       return (
         <div className="flex min-h-screen items-center justify-center bg-[#050914] px-5 py-12 text-slate-100">
-          <div className="card w-full max-w-md border border-white/10 bg-[#0e1730] p-8 text-center shadow-2xl">
+          <div className="card w-full max-w-lg border border-white/10 bg-[#0e1730] p-8 text-center shadow-2xl">
             <span className="text-5xl">🌕</span>
             <h2 className="mt-4 font-display text-3xl text-moon">Something went wrong</h2>
             <p className="mt-2 text-sm text-slate-400">
@@ -29,12 +38,25 @@ export class ErrorBoundary extends React.Component {
                 {this.state.error.message}
               </div>
             )}
-            <button
-              onClick={() => window.location.reload()}
-              className="btn-fruit mt-6 px-6 py-2.5 text-sm font-semibold"
-            >
-              Reload Website
-            </button>
+            {this.state.error?.stack && (
+              <pre className="mt-2 max-h-36 overflow-auto rounded-xl bg-black/60 p-3 text-left font-mono text-[10px] text-slate-400">
+                {this.state.error.stack}
+              </pre>
+            )}
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
+              <button
+                onClick={() => window.location.reload()}
+                className="btn-fruit px-6 py-2.5 text-sm font-semibold"
+              >
+                Reload Page
+              </button>
+              <button
+                onClick={this.handleReset}
+                className="btn-ghost px-5 py-2.5 text-sm font-medium"
+              >
+                Clear Cache & Restart
+              </button>
+            </div>
           </div>
         </div>
       );

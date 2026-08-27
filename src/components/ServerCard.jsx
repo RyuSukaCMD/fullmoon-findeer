@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import { MoonBadge, Moon } from "./Moon";
 import { PlayerAvatar } from "./PlayerAvatar";
 import { playerLabel } from "../server-system/players";
@@ -14,13 +13,8 @@ export function ServerCard({ server, onJoin, nameStyle = "display" }) {
   const showNames = nameStyle !== "avatar";
 
   return (
-    <motion.article
-      layout
-      initial={{ opacity: 0, y: 16, scale: 0.98 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ duration: 0.35, ease: "easeOut" }}
-      className={`card group relative overflow-hidden p-5 transition-shadow ${
+    <article
+      className={`card group relative overflow-hidden p-5 transition-all duration-300 animate-rise ${
         full
           ? "border-moon/40 shadow-[0_0_40px_-12px_rgba(245,200,106,0.5)]"
           : "hover:border-moon/25"
@@ -68,9 +62,8 @@ export function ServerCard({ server, onJoin, nameStyle = "display" }) {
           </Badge>
         </div>
         <div className="h-1.5 overflow-hidden rounded-full bg-black/40">
-          <motion.div
-            className={`h-full rounded-full ${online === server.capacity ? "bg-rose-400" : "bg-gradient-to-r from-fruit to-moon"}`}
-            layout
+          <div
+            className={`h-full rounded-full transition-all duration-300 ${online === server.capacity ? "bg-rose-400" : "bg-gradient-to-r from-fruit to-moon"}`}
             style={{ width: `${pct}%` }}
           />
         </div>
@@ -115,6 +108,6 @@ export function ServerCard({ server, onJoin, nameStyle = "display" }) {
       >
         {full ? "Join · Full Moon" : online === server.capacity ? "Server Full" : "Join Server"}
       </Button>
-    </motion.article>
+    </article>
   );
 }

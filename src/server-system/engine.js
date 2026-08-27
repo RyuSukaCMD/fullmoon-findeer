@@ -153,10 +153,14 @@ export function useServerEngine(cfg) {
   // Fetch a pool of real Roblox avatars and upgrade placeholders as they land.
   useEffect(() => {
     ensurePool(Math.max(40, (cfg?.maxServers || 10) * 12));
-    const unsub = subscribePool(() =>
-      setServers((prev) => prev.map((s) => fillPlayers(s, prev)))
-    );
-    return unsub;
+    const unsub = subscribePool(() => {
+      setServers((prev) => prev.map((s) => fillPlayers(s, prev)));
+    });
+    return () => {
+      if (typeof unsub === "function") {
+        unsub();
+      }
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

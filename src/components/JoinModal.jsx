@@ -6,17 +6,20 @@ import { phaseInfo, isFullMoon, formatMoonStatus } from "../server-system/moon";
 import { Badge } from "./ui";
 
 // The custom in-app browser that opens on "Join Server". Loads the editable
-// site config + the selected server, then renders the multi-page BrowserFrame.
-export function JoinModal({ server, onClose }) {
-  const [site, setSite] = useState(null);
+// site config (or page overrideConfig) + the selected server, then renders the multi-page BrowserFrame.
+export function JoinModal({ server, onClose, overrideConfig }) {
+  const [site, setSite] = useState(overrideConfig || null);
 
   useEffect(() => {
-    getSiteConfig().then(setSite);
-  }, []);
+    if (overrideConfig) {
+      setSite(overrideConfig);
+    } else {
+      getSiteConfig().then(setSite);
+    }
+  }, [overrideConfig]);
 
   const config = buildBrowserConfig(
-    site,
-    // per-server override (optional): let a server pin its own iframe url
+    overrideConfig || site,
     server?.browserOverride || {}
   );
 

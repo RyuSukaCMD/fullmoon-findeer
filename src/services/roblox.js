@@ -9,11 +9,23 @@ let loading = false;
 const listeners = new Set();
 
 function notify() {
-  listeners.forEach((l) => l(pool));
+  listeners.forEach((l) => {
+    try {
+      if (typeof l === "function") l(pool);
+    } catch (e) {
+      console.error("[roblox pool listener error]", e);
+    }
+  });
 }
 export function subscribePool(cb) {
-  listeners.add(cb);
-  return () => listeners.delete(cb);
+  if (typeof cb === "function") {
+    listeners.add(cb);
+  }
+  return () => {
+    if (typeof cb === "function") {
+      listeners.delete(cb);
+    }
+  };
 }
 export function getPool() {
   return pool;

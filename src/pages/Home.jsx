@@ -1,5 +1,4 @@
 import { useMemo, useState, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { useServerEngine } from "../server-system/engine";
 import { phaseInfo, isFullMoon, nightsToFull, formatMoonStatus } from "../server-system/moon";
 import { ServerCard } from "../components/ServerCard";
@@ -10,8 +9,9 @@ import { useSiteConfig } from "../services/siteconfig";
 
 const REGIONS = ["All", "EU", "Asia", "NA", "AS · EU", "EU · NA"];
 
-export function Home({ onJoin }) {
-  const siteCfg = useSiteConfig();
+export function Home({ onJoin, customConfig }) {
+  const globalCfg = useSiteConfig();
+  const siteCfg = customConfig ? { ...globalCfg, ...customConfig } : globalCfg;
   const { servers, refresh } = useServerEngine(siteCfg);
   const [region, setRegion] = useState("All");
   const [fullOnly, setFullOnly] = useState(false);
@@ -20,13 +20,13 @@ export function Home({ onJoin }) {
 
   // Track the main page once per visit (deduped).
   useEffect(() => {
-    trackView("main");
-  }, []);
+    trackView(customConfig?.id || "main");
+  }, [customConfig?.id]);
 
   const derived = useMemo(() => {
-    const fullCount = servers.filter((s) => isFullMoon(s.phaseKey)).length;
-    const totalOnline = servers.reduce((a, s) => a + s.players.length, 0);
-    const nearest = servers
+    const fullCount = (servers || []).filter((s) => isFullMoon(s.phaseKey)).length;
+    const totalOnline = (servers || []).reduce((a, s) => a + (s.players ? s.players.length : 0), 0);
+    const nearest = (servers || [])
       .slice()
       .sort((a, b) => nightsToFull(a.phaseKey) - nightsToFull(b.phaseKey))[0];
     return {
@@ -39,7 +39,7 @@ export function Home({ onJoin }) {
   }, [servers]);
 
   const filtered = useMemo(() => {
-    return servers.filter((s) => {
+    return (servers || []).filter((s) => {
       if (region !== "All" && s.region !== region) return false;
       if (fullOnly && !isFullMoon(s.phaseKey)) return false;
       if (search && !s.name.toLowerCase().includes(search.toLowerCase())) return false;
@@ -56,6 +56,8 @@ export function Home({ onJoin }) {
   }, [refresh]);
 
   const heroPhase = derived.nearestPhase;
+  const titleText = siteCfg?.title || "FULL MOON";
+  const brandText = siteCfg?.branding || (derived.fullCount > 0 ? "Full moon active" : "Live moon tracking");
 
   return (
     <div className="mx-auto max-w-6xl px-5 pb-24">
@@ -64,18 +66,28 @@ export function Home({ onJoin }) {
         <div className="animate-rise">
           <span className="chip border-moon/30 bg-moon/10 text-moon">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-moon" />
-            {derived.fullCount > 0 ? "Full moon active" : "Live moon tracking"}
+            {brandText}
           </span>
           <h1 className="mt-5 font-display text-5xl leading-[0.95] text-white sm:text-6xl md:text-7xl">
-            Find a server at
-            <span className="title-clip block bg-gradient-to-r from-moon via-amber-300 to-fruit text-moon">
-              FULL MOON
-            </span>
+            {customConfig?.title ? (
+              <>
+                <span className="text-slate-300 text-3xl sm:text-4xl block mb-2">Find a server at</span>
+                <span className="title-clip block bg-gradient-to-r from-moon via-amber-300 to-fruit text-moon">
+                  {titleText.toUpperCase()}
+                </span>
+              </>
+            ) : (
+              <>
+                Find a server at
+                <span className="title-clip block bg-gradient-to-r from-moon via-amber-300 to-fruit text-moon">
+                  FULL MOON
+                </span>
+              </>
+            )}
           </h1>
           <p className="mt-5 max-w-md text-slate-300">
-            Blox Fruits servers that are on the edge of a full moon night — so
-            you can awaken your race. Live phase, players, and countdown on
-            every server. 🌙
+            {siteCfg?.description ||
+              "Blox Fruits servers that are on the edge of a full moon night — so you can awaken your race. Live phase, players, and countdown on every server. 🌙"}
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -109,7 +121,7 @@ export function Home({ onJoin }) {
 
       {/* STATS */}
       <section className="mt-14 grid gap-3 sm:grid-cols-3">
-        <Stat icon="🛰️" label="Servers tracked" value={servers.length} />
+        <Stat icon="🛰️" label="Servers tracked" value={(servers || []).length} />
         <Stat icon="🌕" label="Full moon now" value={derived.fullCount} accent="text-moon" />
         <Stat icon="👥" label="Players online" value={derived.totalOnline} accent="text-storm" />
       </section>
@@ -149,13 +161,11 @@ export function Home({ onJoin }) {
         </div>
 
         <div className="relative">
-          <motion.div layout className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-            <AnimatePresence mode="popLayout">
-              {filtered.map((s) => (
-                <ServerCard key={s.id} server={s} onJoin={onJoin} nameStyle={siteCfg?.playerNameStyle || "display"} />
-              ))}
-            </AnimatePresence>
-          </motion.div>
+          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            {filtered.map((s) => (
+              <ServerCard key={s.id} server={s} onJoin={onJoin} nameStyle={siteCfg?.playerNameStyle || "display"} />
+            ))}
+          </div>
           {filtered.length === 0 && (
             <EmptyState icon="🌫️" title="No servers match" message="Try clearing your filters or scan again — a new server may be on the horizon." action={<Button onClick={onScan}>Scan again</Button>} />
           )}

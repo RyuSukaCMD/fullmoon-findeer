@@ -75,8 +75,12 @@ router.post("/", requirePermission("CREATE_PAGE"), (req, res) => {
       sections: Array.isArray(body.sections) ? body.sections.slice(0, 20) : [],
       buttons: Array.isArray(body.buttons) ? body.buttons.slice(0, 20) : [],
       browser_mode: !!body.browser_mode,
+      standalone_browser: !!body.standalone_browser,
       iframe_src: normalizeUrl(body.iframe_src),
       address_pages: cleanAddressPages(body.address_pages),
+      minServers: Number(body.minServers) || 6,
+      maxServers: Number(body.maxServers) || 10,
+      playerNameStyle: body.playerNameStyle || "display",
       visibility: body.visibility === "private" ? "private" : "public",
       status: "active",
       created_at: now,
@@ -117,8 +121,12 @@ router.put("/:id", requirePermission("EDIT_PAGE"), (req, res) => {
   if (body.sections !== undefined) page.sections = body.sections.slice(0, 20);
   if (body.buttons !== undefined) page.buttons = body.buttons.slice(0, 20);
   if (body.browser_mode !== undefined) page.browser_mode = !!body.browser_mode;
+  if (body.standalone_browser !== undefined) page.standalone_browser = !!body.standalone_browser;
   if (body.iframe_src !== undefined) page.iframe_src = normalizeUrl(body.iframe_src);
   if (body.address_pages !== undefined) page.address_pages = cleanAddressPages(body.address_pages);
+  if (body.minServers !== undefined) page.minServers = Number(body.minServers) || 6;
+  if (body.maxServers !== undefined) page.maxServers = Number(body.maxServers) || 10;
+  if (body.playerNameStyle !== undefined) page.playerNameStyle = body.playerNameStyle;
   if (body.visibility !== undefined) page.visibility = body.visibility === "private" ? "private" : "public";
 
   page.updated_at = Date.now();

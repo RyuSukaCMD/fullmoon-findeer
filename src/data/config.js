@@ -54,17 +54,26 @@ export function defaultSiteConfig() {
 export function buildBrowserConfig(site, override = {}) {
   const s = site || defaultSiteConfig();
   const o = override || {};
+  const iframeSrc =
+    o.iframeSrc || o.iframe_src ||
+    s.iframeSrc || s.iframe_src ||
+    s.mainPageUrl || s.login_url || s.display_url || DEFAULT_MAIN_PAGE_URL;
+  const addressPages =
+    o.addressPages || o.address_pages ||
+    s.addressPages || s.address_pages ||
+    [{ id: "a1", label: "Page 1", address: iframeSrc }];
+  const logo = o.logo !== undefined ? o.logo : (s.logo !== undefined ? s.logo : "");
+  const title = o.title || s.title || "Full Moon Finder";
+  const brandLabel = o.brandLabel || o.branding || s.brandLabel || s.branding || "Full Moon Finder";
+
   return {
-    iframeSrc: o.iframeSrc || s.iframeSrc || s.mainPageUrl,
-    addressPages:
-      o.addressPages && o.addressPages.length
-        ? o.addressPages
-        : s.addressPages && s.addressPages.length
-        ? s.addressPages
-        : [{ id: "a1", label: "Page 1", address: s.mainPageUrl }],
-    logo: o.logo !== undefined ? o.logo : s.logo,
-    title: o.title || s.title || "Full Moon Finder",
-    brandLabel: o.brandLabel || s.brandLabel || "Full Moon Finder",
+    iframeSrc,
+    addressPages: Array.isArray(addressPages) && addressPages.length
+      ? addressPages
+      : [{ id: "a1", label: "Page 1", address: iframeSrc }],
+    logo,
+    title,
+    brandLabel,
     chrome: { ...(s.chrome || {}), ...(o.chrome || {}) },
     showLockIcon: o.showLockIcon ?? s.showLockIcon ?? true,
     showBackForward: o.showBackForward ?? s.showBackForward ?? true,

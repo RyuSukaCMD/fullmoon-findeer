@@ -21,7 +21,11 @@ import { MyPages } from "./pages/MyPages";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
-  useEffect(() => window.scrollTo({ top: 0 }), [pathname]);
+  useEffect(() => {
+    try {
+      window.scrollTo({ top: 0 });
+    } catch {}
+  }, [pathname]);
   return null;
 }
 
@@ -44,7 +48,9 @@ function Shell() {
           sessionStorage.setItem("fm_booted", "1");
         } catch {}
       }, 1800);
-      return () => clearTimeout(t);
+      return () => {
+        clearTimeout(t);
+      };
     }
   }, [booting]);
 
